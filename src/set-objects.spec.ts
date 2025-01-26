@@ -1,444 +1,153 @@
 import { SetObjects } from "./set-objects";
 
-interface MockObjectIdNumber {
-  id: number;
-}
-interface MockObjectIdString {
-  id: string;
-}
-interface MockObjectIdArray<T> {
-  id: T[];
-}
-interface MockObjectIdObject<T extends Object> {
-  id: T;
-}
-interface MockObjectWithData<T> {
-  id: number;
-  data: T;
-}
+describe("SetObjects", () => {
+  interface TestObject {
+    id: number;
+    name: string;
+    data: number[];
+  }
 
-describe("constructor", () => {
-  describe("without key", () => {
-    it("should handle an empty list", () => {
-      const objects: never[] = [];
-      const expected: never[] = [];
-      const result: never[] = [...new SetObjects(objects)];
-      expect(result).toEqual(expected);
+  describe("Hashing function based on id", () => {
+    const hashFn = (obj: TestObject) => obj.id;
+
+    let setObjects: SetObjects<TestObject, number>;
+
+    beforeEach(() => {
+      setObjects = new SetObjects<TestObject, number>([], hashFn);
     });
 
-    it("should handle a list of objects with id of type number", () => {
-      const objects: MockObjectIdNumber[] = [
-        {
-          id: 1,
-        },
-        {
-          id: 2,
-        },
-        {
-          id: 3,
-        },
-        {
-          id: 1,
-        },
-        {
-          id: 2,
-        },
-      ];
-
-      const expected: MockObjectIdNumber[] = [
-        {
-          id: 1,
-        },
-        {
-          id: 2,
-        },
-        {
-          id: 3,
-        },
-      ];
-
-      const result: MockObjectIdNumber[] = [...new SetObjects(objects)];
-
-      expect(result).toEqual(expected);
+    it("should add an object to the set", () => {
+      const obj: TestObject = { id: 1, name: "Object 1", data: [1, 1, 1] };
+      setObjects.add(obj);
+      expect(setObjects.has(obj)).toBe(true);
     });
 
-    it("should handle a list of objects with id of type string", () => {
-      const objects: MockObjectIdString[] = [
-        {
-          id: "1",
-        },
-        {
-          id: "2",
-        },
-        {
-          id: "3",
-        },
-        {
-          id: "1",
-        },
-        {
-          id: "2",
-        },
-      ];
-
-      const expected: MockObjectIdString[] = [
-        {
-          id: "1",
-        },
-        {
-          id: "2",
-        },
-        {
-          id: "3",
-        },
-      ];
-
-      const result: MockObjectIdString[] = [...new SetObjects(objects)];
-
-      expect(result).toEqual(expected);
+    it("should check if an object is in the set", () => {
+      const obj: TestObject = { id: 1, name: "Object 1", data: [1, 1, 1] };
+      setObjects.add(obj);
+      expect(setObjects.has(obj)).toBe(true);
+      const obj2: TestObject = { id: 2, name: "Object 2", data: [2, 2, 2] };
+      expect(setObjects.has(obj2)).toBe(false);
     });
 
-    it("should handle a list of objects with id of type array", () => {
-      const objects: MockObjectIdArray<string>[] = [
-        {
-          id: ["1"],
-        },
-        {
-          id: ["2"],
-        },
-        {
-          id: ["3"],
-        },
-        {
-          id: ["1"],
-        },
-        {
-          id: ["1", "1"],
-        },
-        {
-          id: ["2"],
-        },
-      ];
-
-      const expected: MockObjectIdArray<string>[] = [
-        {
-          id: ["1"],
-        },
-        {
-          id: ["2"],
-        },
-        {
-          id: ["3"],
-        },
-        {
-          id: ["1", "1"],
-        },
-      ];
-
-      const result: MockObjectIdArray<string>[] = [...new SetObjects(objects)];
-
-      expect(result).toEqual(expected);
+    it("should delete an object from the set", () => {
+      const obj: TestObject = { id: 1, name: "Object 1", data: [1, 1, 1] };
+      setObjects.add(obj);
+      setObjects.delete(obj);
+      expect(setObjects.has(obj)).toBe(false);
     });
 
-    it("should handle a list of objects with id of type object", () => {
-      const objects: MockObjectIdObject<{ value: string }>[] = [
-        {
-          id: { value: "1" },
-        },
-        {
-          id: { value: "2" },
-        },
-        {
-          id: { value: "3" },
-        },
-        {
-          id: { value: "1" },
-        },
-        {
-          id: { value: "11" },
-        },
-        {
-          id: { value: "2" },
-        },
-      ];
-
-      const expected: MockObjectIdObject<{ value: string }>[] = [
-        {
-          id: { value: "1" },
-        },
-        {
-          id: { value: "2" },
-        },
-        {
-          id: { value: "3" },
-        },
-        {
-          id: { value: "11" },
-        },
-      ];
-
-      const result: MockObjectIdObject<{ value: string }>[] = [
-        ...new SetObjects(objects),
-      ];
-
-      expect(result).toEqual(expected);
+    it("should return all objects in the set", () => {
+      const obj1: TestObject = { id: 1, name: "Object 1", data: [1, 1, 1] };
+      const obj2: TestObject = { id: 2, name: "Object 2", data: [2, 2, 2] };
+      setObjects.add(obj1);
+      setObjects.add(obj2);
+      expect([...setObjects]).toEqual([obj1, obj2]);
     });
 
-    it("should handle a list of objects with data", () => {
-      const objects: MockObjectWithData<string>[] = [
-        {
-          id: 1,
-          data: 'data',
-        },
-        {
-          id: 2,
-          data: 'data',
-        },
-        {
-          id: 3,
-          data: 'data',
-        },
-        {
-          id: 1,
-          data: 'data',
-        },
-        {
-          id: 2,
-          data: 'data',
-        },
-      ];
-
-      const expected: MockObjectWithData<string>[] = [
-        {
-          id: 1,
-          data: 'data',
-        },
-        {
-          id: 2,
-          data: 'data',
-        },
-        {
-          id: 3,
-          data: 'data',
-        },
-      ];
-
-      const result: MockObjectWithData<string>[] = [...new SetObjects(objects)];
-
-      expect(result).toEqual(expected);
+    it("should initialize with an array of objects", () => {
+      const obj1: TestObject = { id: 1, name: "Object 1", data: [1, 1, 1] };
+      const obj2: TestObject = { id: 2, name: "Object 2", data: [2, 2, 2] };
+      setObjects = new SetObjects<TestObject, number>([obj1, obj2], hashFn);
+      expect(setObjects.has(obj1)).toBe(true);
+      expect(setObjects.has(obj2)).toBe(true);
     });
   });
 
-  describe("with key", () => {
-    it("should handle an empty list", () => {
-      const objects: never[] = [];
-      const expected: never[] = [];
-      const result: never[] = [...new SetObjects(objects, "key")];
-      expect(result).toEqual(expected);
+  describe("Hashing function based on name", () => {
+    const hashFn = (obj: TestObject) => obj.name;
+
+    let setObjects: SetObjects<TestObject, string>;
+
+    beforeEach(() => {
+      setObjects = new SetObjects<TestObject, string>([], hashFn);
     });
 
-    it("should handle a list of objects with id of type number", () => {
-      const objects: MockObjectIdNumber[] = [
-        {
-          id: 1,
-        },
-        {
-          id: 2,
-        },
-        {
-          id: 3,
-        },
-        {
-          id: 1,
-        },
-        {
-          id: 2,
-        },
-      ];
-
-      const expected: MockObjectIdNumber[] = [
-        {
-          id: 1,
-        },
-        {
-          id: 2,
-        },
-        {
-          id: 3,
-        },
-      ];
-
-      const result: MockObjectIdNumber[] = [...new SetObjects(objects, "id")];
-
-      expect(result).toEqual(expected);
+    it("should add an object to the set", () => {
+      const obj: TestObject = { id: 1, name: "Object 1", data: [1, 1, 1] };
+      setObjects.add(obj);
+      expect(setObjects.has(obj)).toBe(true);
     });
 
-    it("should handle a list of objects with id of type string", () => {
-      const objects: MockObjectIdString[] = [
-        {
-          id: "1",
-        },
-        {
-          id: "2",
-        },
-        {
-          id: "3",
-        },
-        {
-          id: "1",
-        },
-        {
-          id: "2",
-        },
-      ];
-
-      const expected: MockObjectIdString[] = [
-        {
-          id: "1",
-        },
-        {
-          id: "2",
-        },
-        {
-          id: "3",
-        },
-      ];
-
-      const result: MockObjectIdString[] = [...new SetObjects(objects, "id")];
-
-      expect(result).toEqual(expected);
+    it("should check if an object is in the set", () => {
+      const obj: TestObject = { id: 1, name: "Object 1", data: [1, 1, 1] };
+      setObjects.add(obj);
+      expect(setObjects.has(obj)).toBe(true);
+      const obj2: TestObject = { id: 2, name: "Object 2", data: [2, 2, 2] };
+      expect(setObjects.has(obj2)).toBe(false);
     });
 
-    it("should handle a list of objects with id of type array", () => {
-      const objects: MockObjectIdArray<string>[] = [
-        {
-          id: ["1"],
-        },
-        {
-          id: ["2"],
-        },
-        {
-          id: ["3"],
-        },
-        {
-          id: ["1"],
-        },
-        {
-          id: ["1", "1"],
-        },
-        {
-          id: ["2"],
-        },
-      ];
-
-      const expected: MockObjectIdArray<string>[] = [
-        {
-          id: ["1"],
-        },
-        {
-          id: ["2"],
-        },
-        {
-          id: ["3"],
-        },
-        {
-          id: ["1", "1"],
-        },
-      ];
-
-      const result: MockObjectIdArray<string>[] = [
-        ...new SetObjects(objects, "id"),
-      ];
-
-      expect(result).toEqual(expected);
+    it("should delete an object from the set", () => {
+      const obj: TestObject = { id: 1, name: "Object 1", data: [1, 1, 1] };
+      setObjects.add(obj);
+      setObjects.delete(obj);
+      expect(setObjects.has(obj)).toBe(false);
     });
 
-    it("should handle a list of objects with id of type object", () => {
-      const objects: MockObjectIdObject<{ value: string }>[] = [
-        {
-          id: { value: "1" },
-        },
-        {
-          id: { value: "2" },
-        },
-        {
-          id: { value: "3" },
-        },
-        {
-          id: { value: "1" },
-        },
-        {
-          id: { value: "11" },
-        },
-        {
-          id: { value: "2" },
-        },
-      ];
-
-      const expected: MockObjectIdObject<{ value: string }>[] = [
-        {
-          id: { value: "1" },
-        },
-        {
-          id: { value: "2" },
-        },
-        {
-          id: { value: "3" },
-        },
-        {
-          id: { value: "11" },
-        },
-      ];
-
-      const result: MockObjectIdObject<{ value: string }>[] = [
-        ...new SetObjects(objects, "id"),
-      ];
-
-      expect(result).toEqual(expected);
+    it("should return all objects in the set", () => {
+      const obj1: TestObject = { id: 1, name: "Object 1", data: [1, 1, 1] };
+      const obj2: TestObject = { id: 2, name: "Object 2", data: [2, 2, 2] };
+      setObjects.add(obj1);
+      setObjects.add(obj2);
+      expect([...setObjects]).toEqual([obj1, obj2]);
     });
 
-    it("should handle a list of objects with data", () => {
-      const objects: MockObjectWithData<string>[] = [
-        {
-          id: 1,
-          data: 'data',
-        },
-        {
-          id: 2,
-          data: 'data',
-        },
-        {
-          id: 3,
-          data: 'data',
-        },
-        {
-          id: 1,
-          data: 'data',
-        },
-        {
-          id: 2,
-          data: 'data',
-        },
-      ];
+    it("should initialize with an array of objects", () => {
+      const obj1: TestObject = { id: 1, name: "Object 1", data: [1, 1, 1] };
+      const obj2: TestObject = { id: 2, name: "Object 2", data: [2, 2, 2] };
+      setObjects = new SetObjects<TestObject, string>([obj1, obj2], hashFn);
+      expect(setObjects.has(obj1)).toBe(true);
+      expect(setObjects.has(obj2)).toBe(true);
+    });
+  });
 
-      const expected: MockObjectWithData<string>[] = [
-        {
-          id: 1,
-          data: 'data',
-        },
-        {
-          id: 2,
-          data: 'data',
-        },
-        {
-          id: 3,
-          data: 'data',
-        },
-      ];
+  describe("Hashing function based on data", () => {
+    const hashFn = (obj: TestObject) =>
+      obj.data.reduce((acc, val) => {
+        return acc + val;
+      }, 0);
 
-      const result: MockObjectWithData<string>[] = [...new SetObjects(objects, 'id')];
+    let setObjects: SetObjects<TestObject, number>;
 
-      expect(result).toEqual(expected);
+    beforeEach(() => {
+      setObjects = new SetObjects<TestObject, number>([], hashFn);
+    });
+
+    it("should add an object to the set", () => {
+      const obj: TestObject = { id: 1, name: "Object 1", data: [1, 1, 1] };
+      setObjects.add(obj);
+      expect(setObjects.has(obj)).toBe(true);
+    });
+
+    it("should check if an object is in the set", () => {
+      const obj: TestObject = { id: 1, name: "Object 1", data: [1, 1, 1] };
+      setObjects.add(obj);
+      expect(setObjects.has(obj)).toBe(true);
+      const obj2: TestObject = { id: 2, name: "Object 2", data: [2, 2, 2] };
+      expect(setObjects.has(obj2)).toBe(false);
+    });
+
+    it("should delete an object from the set", () => {
+      const obj: TestObject = { id: 1, name: "Object 1", data: [1, 1, 1] };
+      setObjects.add(obj);
+      setObjects.delete(obj);
+      expect(setObjects.has(obj)).toBe(false);
+    });
+
+    it("should return all objects in the set", () => {
+      const obj1: TestObject = { id: 1, name: "Object 1", data: [1, 1, 1] };
+      const obj2: TestObject = { id: 2, name: "Object 2", data: [2, 2, 2] };
+      setObjects.add(obj1);
+      setObjects.add(obj2);
+      expect([...setObjects]).toEqual([obj1, obj2]);
+    });
+
+    it("should initialize with an array of objects", () => {
+      const obj1: TestObject = { id: 1, name: "Object 1", data: [1, 1, 1] };
+      const obj2: TestObject = { id: 2, name: "Object 2", data: [2, 2, 2] };
+      setObjects = new SetObjects<TestObject, number>([obj1, obj2], hashFn);
+      expect(setObjects.has(obj1)).toBe(true);
+      expect(setObjects.has(obj2)).toBe(true);
     });
   });
 });
